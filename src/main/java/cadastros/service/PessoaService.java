@@ -2,6 +2,7 @@ package cadastros.service;
 
 import cadastros.domain.model.Pessoa;
 import cadastros.domain.repository.PessoaRepository;
+import cadastros.dto.PessoaDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -39,17 +40,16 @@ public class PessoaService {
         return repository.findAll(example);
     }
 
-    public Pessoa cadastrar(Pessoa pessoa){
+    public Pessoa cadastrar(PessoaDto dto){
+        Pessoa pessoa = new Pessoa(dto.getNome(), dto.getNascimento());
         return repository.save(pessoa);
     }
 
-    public void editar(Long id, Pessoa pessoa){
-        repository.findById(id).map(pessoaEncontrada -> {
-            pessoa.setId(pessoaEncontrada.getId());
-            repository.save(pessoa);
-            return pessoa;
-        }).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Pessoa não encontrada com o ID informado."));
+    public void editar(Long id, PessoaDto dto){
+        Pessoa pessoa = this.listarPorId(id);
+        pessoa.setNome(dto.getNome());
+        pessoa.setNascimento(dto.getNascimento());
+        repository.save(pessoa);
     }
 
 

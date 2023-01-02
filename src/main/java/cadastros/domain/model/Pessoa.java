@@ -10,8 +10,6 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.ManyToMany;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.util.*;
 
 @Entity
@@ -24,27 +22,17 @@ public class Pessoa {
     private Long id;
 
     @Column(length = 100)
-    @NotEmpty(message = "Obrigatório informar o nome.")
     private String nome;
 
     @Column(length = 10)
-    @NotNull(message = "Obrigatório informar o nome.")
     private Date nascimento;
 
-
     @ManyToMany(mappedBy = "pessoas")
-    private List<Endereco> enderecos;
+    private List<Endereco> enderecos = new ArrayList<>();
 
     public Pessoa(String nome, Date nascimento) {
         this.nome = nome;
         this.nascimento = nascimento;
-    }
-
-    public Pessoa(String nome, Date nascimento, Endereco endereco) {
-        this.nome = nome;
-        this.nascimento = nascimento;
-        this.enderecos = new ArrayList<>();
-        enderecos.add(endereco);
     }
 
     public Pessoa(){}
@@ -66,5 +54,18 @@ public class Pessoa {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setNascimento(Date nascimento) {
+        this.nascimento = nascimento;
+    }
+
+    public List<Endereco> cadastrarEndereco(Endereco endereco){
+        this.enderecos.add(endereco);
+        return this.enderecos;
     }
 }

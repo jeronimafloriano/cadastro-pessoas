@@ -1,6 +1,7 @@
 package cadastros.controller;
 
 import cadastros.domain.model.Pessoa;
+import cadastros.dto.PessoaDto;
 import cadastros.service.PessoaService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -48,23 +49,16 @@ public class PessoaController {
 
     @PostMapping("/cadastrar")
     @ResponseStatus(HttpStatus.CREATED)
-    public Pessoa cadastrar(@RequestBody @Valid Pessoa pessoa){
-        return service.cadastrar(pessoa);
+    public Pessoa cadastrar(@RequestBody @Valid PessoaDto pessoaDto){
+        return service.cadastrar(pessoaDto);
     }
 
     @PutMapping("/{id}")
     @ApiOperation("Editar o cadastro de uma pessoa")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void editar(@PathVariable Long id, @RequestBody Pessoa pessoa){
-        service.editar(id, pessoa);
+    public void editar(@PathVariable Long id, @RequestBody PessoaDto pessoaDto){
+        service.editar(id, pessoaDto);
     }
-
-
-
-
-
-
-
 
 
 }
