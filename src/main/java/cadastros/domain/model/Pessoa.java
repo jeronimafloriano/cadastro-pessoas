@@ -1,6 +1,7 @@
 package cadastros.domain.model;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.persistence.Entity;
@@ -10,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.ManyToMany;
+import java.time.LocalDate;
 import java.util.*;
 
 @Entity
@@ -25,12 +27,13 @@ public class Pessoa {
     private String nome;
 
     @Column(length = 10)
-    private Date nascimento;
+    @JsonFormat(pattern="yyyy-MM-dd", timezone="America/Sao_Paulo")
+    private LocalDate nascimento;
 
     @ManyToMany(mappedBy = "pessoas")
     private List<Endereco> enderecos = new ArrayList<>();
 
-    public Pessoa(String nome, Date nascimento) {
+    public Pessoa(String nome, LocalDate nascimento) {
         this.nome = nome;
         this.nascimento = nascimento;
     }
@@ -40,7 +43,7 @@ public class Pessoa {
         return nome;
     }
 
-    public Date getNascimento() {
+    public LocalDate getNascimento() {
         return nascimento;
     }
 
@@ -52,15 +55,11 @@ public class Pessoa {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public void setNome(String nome) {
         this.nome = nome;
     }
 
-    public void setNascimento(Date nascimento) {
+    public void setNascimento(LocalDate nascimento) {
         this.nascimento = nascimento;
     }
 
@@ -68,4 +67,12 @@ public class Pessoa {
         this.enderecos.add(endereco);
         return this.enderecos;
     }
+
+    @Override
+    public String toString() {
+        return " ID da pessoa: " + this.id
+                + " Nome: " + this.nome
+                + " Data de Nascimento: " + this.nascimento;
+    }
+
 }

@@ -16,7 +16,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/enderecos")
+@RequestMapping(value = "/enderecos", consumes = "application/json")
 public class EnderecoController {
 
     @Autowired

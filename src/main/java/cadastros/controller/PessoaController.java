@@ -14,7 +14,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/pessoas")
+@RequestMapping(value = "/pessoas", consumes = "application/json")
 public class PessoaController {
 
     @Autowired

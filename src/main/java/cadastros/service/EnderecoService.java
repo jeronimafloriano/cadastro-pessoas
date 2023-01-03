@@ -34,8 +34,13 @@ public class EnderecoService {
     }
 
     public Endereco cadastrar(Pessoa pessoa, EnderecoDto dto){
-        Endereco endereco = new Endereco(dto.getLogradouro(), dto.getCep(),
-                                            dto.getNumero(), dto.getCidade(), dto.isPrincipal());
+        Endereco endereco = Endereco.builder().logradouro(dto.getLogradouro())
+                .cep(dto.getCep())
+                .numero(dto.getNumero())
+                .cidade(dto.getCidade())
+                .isPrincipal(dto.isPrincipal())
+                .build();
+
         pessoa.cadastrarEndereco(endereco);
         endereco.vincularPessoa(pessoa);
 
