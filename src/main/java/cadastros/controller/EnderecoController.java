@@ -2,7 +2,9 @@ package cadastros.controller;
 
 import cadastros.domain.model.Endereco;
 import cadastros.domain.model.Pessoa;
-import cadastros.dto.EnderecoDto;
+import cadastros.dto.CadastrarEnderecoDto;
+import cadastros.dto.EditarEnderecoDto;
+import cadastros.dto.EditarTipoEnderecoDto;
 import cadastros.service.EnderecoService;
 import cadastros.service.PessoaService;
 import io.swagger.annotations.ApiOperation;
@@ -16,7 +18,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/enderecos", consumes = "application/json")
+@RequestMapping(value = "/enderecos")
 public class EnderecoController {
 
     @Autowired
@@ -25,7 +27,7 @@ public class EnderecoController {
     @Autowired
     private PessoaService pessoaService;
 
-    @GetMapping(value = "/listar/{id}")
+    @GetMapping(value = "{id}", produces = "application/json")
     @ApiOperation("Obter detalhes de um endereco")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Pessoa encontrada"),
@@ -35,35 +37,31 @@ public class EnderecoController {
         return service.listarEnderecoPorId(id);
     }
 
-    @GetMapping(value = "/listar/pessoa/{id}")
-    @ApiOperation("Obter detalhes de um endereco")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Endereco encontrado"),
-            @ApiResponse(code = 404, message = "Endereco não encontrado para o ID da pessoa informada")
-    })
-    public List<Endereco>  listarPorPessoaId(@PathVariable Long id){
-        return service.listarEnderecoPorPessoaId(id);
-    }
-
-
-    @GetMapping(value = "/listar")
+    @GetMapping(produces = "application/json")
     @ApiOperation("Listar todos os enderecos cadastrados")
     public List<Endereco> listarTodos(){
         return service.listarTodos();
     }
 
-    @PostMapping("/cadastrar/pessoa/{id}")
+    @PostMapping(value = "/pessoa/{id}", produces = "application/json")
     @ResponseStatus(HttpStatus.CREATED)
-    public Endereco cadastrar(@PathVariable Long id, @RequestBody @Valid EnderecoDto enderecoDto){
+    public Endereco cadastrar(@PathVariable Long id, @RequestBody @Valid CadastrarEnderecoDto enderecoDto){
         Pessoa pessoa = pessoaService.listarPorId(id);
         return service.cadastrar(pessoa, enderecoDto);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", produces = "application/json")
     @ApiOperation("Editar o cadastro de uma pessoa")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void editar(@PathVariable Long id, @RequestBody EnderecoDto enderecoDto){
+    public void editar(@PathVariable Long id, @RequestBody EditarEnderecoDto enderecoDto){
         service.editar(id, enderecoDto);
+    }
+
+    @PutMapping(value = "/{id}/pessoa/{idPessoa}/tipoEndereco", produces = "application/json")
+    @ApiOperation("Altera o tipo de endereço cadastrado para uma pessoa")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void editarTipoEndereco(@PathVariable Long id, @PathVariable Long idPessoa, @RequestBody EditarTipoEnderecoDto tipoDto){
+        service.editarTipo(id, idPessoa, tipoDto);
     }
 
 }

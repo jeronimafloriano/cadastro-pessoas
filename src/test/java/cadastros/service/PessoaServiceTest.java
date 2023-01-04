@@ -1,7 +1,9 @@
 package cadastros.service;
 
 
+import cadastros.domain.model.Endereco;
 import cadastros.domain.model.Pessoa;
+import cadastros.domain.model.TipoEndereco;
 import cadastros.domain.repository.PessoaRepository;
 import cadastros.dto.PessoaDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,8 +14,9 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.data.domain.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -28,7 +31,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.reset;
 
 @ExtendWith(MockitoExtension.class)
 class PessoaServiceTest {
@@ -66,11 +68,12 @@ class PessoaServiceTest {
         then(repository).should().findById(anyLong());
         then(repository).shouldHaveNoMoreInteractions();
 
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(pessoa);
+        assertThat(result).isNotNull()
+                .isEqualTo(pessoa);
     }
 
     @Test
+    @MockitoSettings(strictness = Strictness.LENIENT)
     void deveListarPessoaPorFiltroInformado() {
         //given
         Pessoa pessoa = this.pessoas.get(0);
@@ -82,14 +85,13 @@ class PessoaServiceTest {
 
        Example example = Example.of(pessoa, matcher);
 
-        given(repository.findAll(example)).willReturn(List.of(pessoa));
+        given(repository.findAll(example, Sort.by("id").ascending())).willReturn(List.of(pessoa));
 
         //when
         List<Pessoa> result = service.buscarPor(pessoa);
 
         //then
-        assertThat(result).hasSize(1);
-        assertThat(result).contains(pessoa);
+        assertThat(result).hasSize(1).contains(pessoa);
     }
 
     @DisplayName("Teste de listagem de pessoas por ID, buscando por um ID inexistente.")
@@ -99,24 +101,30 @@ class PessoaServiceTest {
         assertThrows(ResponseStatusException.class, criar);
     }
 
+    @DisplayName("Teste de listagem de pessoas cadastradas.")
     @Test
+    @MockitoSettings(strictness = Strictness.LENIENT)
     void deveListarTodasAsPessoasCadastradas() {
         //given
-        given(repository.findAll()).willReturn(pessoas);
+        Pageable paginacao = PageRequest.of(0,5, Sort.Direction.ASC, "id");
+        Page<Pessoa> page = new PageImpl<>(pessoas);
+        given(repository.findAll(paginacao)).willReturn(page);
 
         //when
-        List<Pessoa> result = service.listarTodos();
+        List<Pessoa> result = service.listarTodos(paginacao);
 
         //then
-        then(repository).should(atLeastOnce()).findAll();
+        then(repository).should(atLeastOnce()).findAll(paginacao);
         assertThat(result).hasSize(2);
     }
 
+    @DisplayName("Teste de cadastro de pessoa.")
     @Test
     void deveCadastrarPessoaAoInformarTodosOsCamposValidos() {
         //given
         var pessoa = this.pessoas.get(0);
         PessoaDto dto = new PessoaDto(pessoa.getNome(), pessoa.getNascimento());
+
         given(repository.save(any(Pessoa.class))).willReturn(pessoa);
 
         //when
@@ -124,10 +132,10 @@ class PessoaServiceTest {
 
         //then
         then(repository).shouldHaveNoMoreInteractions();
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(pessoa);
+        assertThat(result).isNotNull().isEqualTo(pessoa);
     }
 
+    @DisplayName("Teste de edição de uma pessoa existente.")
     @Test
     void deveEditarPessoaAoSelecionarPessoaExistente() {
         //given
@@ -144,4 +152,30 @@ class PessoaServiceTest {
         assertThat(pessoa.getNome()).isEqualTo("Marcos");
         assertThat(pessoa.getNascimento()).isEqualTo(LocalDate.of(1994, 01, 01));
     }
+
+    @DisplayName("Teste de listagem de endereço por ID de uma pessoa cadastrada")
+    @Test
+    void deveListarEnderecosPorPessoa() {
+        //given
+        Pessoa pessoa = new Pessoa("João", LocalDate.of(1956,8,02));
+        Endereco endereco = Endereco.builder().logradouro("Av Castelo Branco")
+                .cep(75289633)
+                .numero(301)
+                .cidade("Goiania")
+                .tipoEndereco(TipoEndereco.PRINCIPAL)
+                .build();
+        pessoa.cadastrarEndereco(endereco);
+
+        given(repository.findById(1L)).willReturn(Optional.of(pessoa));
+
+        //when
+        var result = service.listarEnderecosPorPessoa(1L);
+
+        //then
+        then(repository).should().findById(anyLong());
+        then(repository).shouldHaveNoMoreInteractions();
+
+        assertThat(result).isNotNull().contains(endereco);
+    }
+
 }

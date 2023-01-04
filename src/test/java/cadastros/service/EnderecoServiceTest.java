@@ -2,8 +2,11 @@ package cadastros.service;
 
 import cadastros.domain.model.Endereco;
 import cadastros.domain.model.Pessoa;
+import cadastros.domain.model.TipoEndereco;
 import cadastros.domain.repository.EnderecoRepository;
-import cadastros.dto.EnderecoDto;
+import cadastros.dto.CadastrarEnderecoDto;
+import cadastros.dto.EditarEnderecoDto;
+import cadastros.dto.EditarTipoEnderecoDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,14 +47,14 @@ class EnderecoServiceTest {
                 .cep(11111111)
                 .numero(11111)
                 .cidade("Goiania")
-                .isPrincipal(true)
+                .tipoEndereco(TipoEndereco.PRINCIPAL)
                 .build();
 
         Endereco endereco2 = Endereco.builder().logradouro("Rua 10")
                 .cep(2222222)
                 .numero(3333)
                 .cidade("Osasco")
-                .isPrincipal(false)
+                .tipoEndereco(TipoEndereco.SECUNDARIO)
                 .build();
 
         this.enderecos = new ArrayList<>();
@@ -68,7 +71,7 @@ class EnderecoServiceTest {
                 .cep(11111111)
                 .numero(11111)
                 .cidade("Goiania")
-                .isPrincipal(true)
+                .tipoEndereco(TipoEndereco.PRINCIPAL)
                 .build();
 
         given(repository.findById(1L)).willReturn(Optional.of(endereco));
@@ -80,8 +83,7 @@ class EnderecoServiceTest {
         then(repository).should().findById(anyLong());
         then(repository).shouldHaveNoMoreInteractions();
 
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(endereco);
+        assertThat(result).isNotNull().isEqualTo(endereco);
     }
 
     @DisplayName("Teste de listagem de endereço por ID, buscando por um ID inexistente.")
@@ -91,6 +93,35 @@ class EnderecoServiceTest {
         assertThrows(ResponseStatusException.class, criar);
     }
 
+    @DisplayName("Testa o lançamento de exceção ao tentar cadastrar mais de um endereço como endereço principal")
+    @Test
+    void deveLancarExcecaoAoCadastrarMaisDeUmEnderecoPrincipal() {
+        Pessoa pessoa = new Pessoa();
+        pessoa.cadastrarEndereco(enderecos.get(0));
+
+        CadastrarEnderecoDto dto = new CadastrarEnderecoDto("Rua 10", 74125896,
+                312, "Natal", TipoEndereco.PRINCIPAL);
+
+
+        Executable criar = () -> service.cadastrar(pessoa, dto);
+        assertThrows(ResponseStatusException.class, criar);
+    }
+
+
+    @DisplayName("Testa o lançamento de exceção ao tentar cadastrar mais de um endereço como endereço principal")
+    @Test
+    void deveLancarExcecaoAoEditarEnderecoInformandoMaisDeUmEnderecoComoPrincipal() {
+        Pessoa pessoa = new Pessoa();
+        pessoa.cadastrarEndereco(enderecos.get(0));
+
+        EditarTipoEnderecoDto dto = new EditarTipoEnderecoDto(TipoEndereco.PRINCIPAL);
+
+
+        Executable criar = () -> service.editarTipo(1L, 2L, dto);
+        assertThrows(ResponseStatusException.class, criar);
+    }
+
+    @DisplayName("Teste de listagem de endereço por ID de uma pessoa cadastrada e vinculada ao endereço.")
     @Test
     void deveListarEnderecoPorPessoaIdAoBuscarIdExistente() {
         //given
@@ -102,10 +133,12 @@ class EnderecoServiceTest {
 
         //then
         then(repository).should(times(1)).findByPessoasId(1L);
-        assertThat(result).hasSize(2);
-        assertThat(result).contains(endereco);
+        assertThat(result)
+                .hasSize(2)
+                .contains(endereco);
     }
 
+    @DisplayName("Teste de listagem de endereços cadastrados.")
     @Test
     void deveListarTodosEnderecosCadastrados() {
         //given
@@ -119,12 +152,13 @@ class EnderecoServiceTest {
         assertThat(result).hasSize(2);
     }
 
+    @DisplayName("Teste de cadastro de endereço.")
     @Test
     void deveCadastrarEnderecoAoInformarTodosOsCamposValidos() {
         //given
         var endereco = this.enderecos.get(0);
-        EnderecoDto dto = new EnderecoDto(endereco.getLogradouro(), endereco.getCep(),
-                                endereco.getNumero(),endereco.getCidade(), endereco.isPrincipal());
+        CadastrarEnderecoDto dto = new CadastrarEnderecoDto(endereco.getLogradouro(), endereco.getCep(),
+                                endereco.getNumero(),endereco.getCidade(), endereco.getTipoEndereco());
         Pessoa pessoa = new Pessoa();
         given(repository.save(any(Endereco.class))).willReturn(endereco);
 
@@ -133,16 +167,18 @@ class EnderecoServiceTest {
 
         //then
         then(repository).shouldHaveNoMoreInteractions();
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(endereco);
+        assertThat(result).
+                isNotNull()
+                .isEqualTo(endereco);
     }
 
+    @DisplayName("Teste de edição de um endereço existente.")
     @Test
-    void deveEditarEnderecoAoSelecionarEnderecoExistente() {
+    void deveEditarTipoDoEndereco() {
         //given
         var endereco = this.enderecos.get(0);
-        EnderecoDto dto = new EnderecoDto(endereco.getLogradouro(), 752258990,
-                14789,endereco.getCidade(), endereco.isPrincipal());
+        EditarEnderecoDto dto = new EditarEnderecoDto(endereco.getLogradouro(), 752258990,
+                14789,endereco.getCidade());
 
         given(repository.findById(1L)).willReturn(Optional.of(endereco));
 

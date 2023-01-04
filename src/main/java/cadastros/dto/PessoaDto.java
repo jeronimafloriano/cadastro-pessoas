@@ -3,7 +3,6 @@ package cadastros.dto;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.Date;
 
 public class PessoaDto {
 
@@ -17,6 +16,8 @@ public class PessoaDto {
         this.nome = nome;
         this.nascimento = nascimento;
     }
+
+    protected PessoaDto(){}
 
     public String getNome() {
         return nome;

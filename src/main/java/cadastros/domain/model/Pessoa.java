@@ -2,7 +2,9 @@ package cadastros.domain.model;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -28,9 +30,11 @@ public class Pessoa {
 
     @Column(length = 10)
     @JsonFormat(pattern="yyyy-MM-dd", timezone="America/Sao_Paulo")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     private LocalDate nascimento;
 
     @ManyToMany(mappedBy = "pessoas")
+    @JsonIgnore
     private List<Endereco> enderecos = new ArrayList<>();
 
     public Pessoa(String nome, LocalDate nascimento) {
@@ -39,6 +43,13 @@ public class Pessoa {
     }
 
     public Pessoa(){}
+
+    public Pessoa(Long id, String nome, LocalDate nascimento) {
+        this.id = id;
+        this.nome = nome;
+        this.nascimento = nascimento;
+    }
+
     public String getNome() {
         return nome;
     }
@@ -64,6 +75,11 @@ public class Pessoa {
     }
 
     public List<Endereco> cadastrarEndereco(Endereco endereco){
+        var enderecoPrincipal = this.enderecos.stream().filter(e -> e.getTipoEndereco().equals(TipoEndereco.PRINCIPAL)).count();
+        if(endereco.getTipoEndereco().equals(TipoEndereco.PRINCIPAL) && enderecoPrincipal > 0){
+            throw new RuntimeException("Já existe um endereço cadastrado como principal para a pessoa informada");
+        }
+
         this.enderecos.add(endereco);
         return this.enderecos;
     }

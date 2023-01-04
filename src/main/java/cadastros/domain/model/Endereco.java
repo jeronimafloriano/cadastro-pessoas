@@ -1,13 +1,8 @@
 package cadastros.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.*;
 
 @Entity
@@ -32,20 +27,20 @@ public class Endereco {
     private String cidade;
 
     @ManyToMany
+    @JsonIgnore
     private List<Pessoa> pessoas = new ArrayList<>();
 
-    private boolean isPrincipal;
+    @Enumerated(EnumType.STRING)
+    private TipoEndereco tipoEndereco;
 
     protected Endereco(){}
 
-    private Endereco(String logradouro, final Integer cep, Integer numero, String cidade, boolean isPrincipal) {
+    private Endereco(String logradouro, final Integer cep, Integer numero, String cidade, TipoEndereco tipoEndereco) {
         this.logradouro = logradouro;
         this.cep = cep;
         this.numero = numero;
         this.cidade = cidade;
-        this.isPrincipal = isPrincipal;
-
-
+        this.tipoEndereco = tipoEndereco;
     }
 
     public static EnderecoBuilder builder(){
@@ -88,14 +83,6 @@ public class Endereco {
         this.cidade = cidade;
     }
 
-    public boolean isPrincipal() {
-        return isPrincipal;
-    }
-
-    public void setPrincipal(boolean principal) {
-        this.isPrincipal = principal;
-    }
-
     public List<Pessoa> vincularPessoa(Pessoa pessoa){
         this.pessoas.add(pessoa);
         return pessoas;
@@ -103,6 +90,14 @@ public class Endereco {
 
     public List<Pessoa> getPessoas() {
         return pessoas;
+    }
+
+    public TipoEndereco getTipoEndereco() {
+        return tipoEndereco;
+    }
+
+    public void setTipoEndereco(TipoEndereco tipoEndereco) {
+        this.tipoEndereco = tipoEndereco;
     }
 
     @Override
@@ -121,7 +116,7 @@ public class Endereco {
 
         private Integer numero;
         private String cidade;
-        private boolean isPrincipal;
+        private TipoEndereco tipoEndereco;
 
         EnderecoBuilder (){}
 
@@ -145,8 +140,8 @@ public class Endereco {
             return this;
         }
 
-        public EnderecoBuilder isPrincipal(final boolean isPrincipal){
-            this.isPrincipal = isPrincipal;
+        public EnderecoBuilder tipoEndereco(final TipoEndereco tipoEndereco){
+            this.tipoEndereco = tipoEndereco;
             return this;
         }
 
@@ -165,7 +160,7 @@ public class Endereco {
                     Objects.requireNonNull(this.cep),
                     Objects.requireNonNull(this.numero),
                     Objects.requireNonNull(this.cidade),
-                    Objects.requireNonNull(this.isPrincipal));
+                    Objects.requireNonNull(this.tipoEndereco));
         }
     }
 

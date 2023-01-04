@@ -1,9 +1,11 @@
 package cadastros.dto;
 
 
+import cadastros.domain.model.TipoEndereco;
+
 import javax.validation.constraints.*;
 
-public class EnderecoDto {
+public class CadastrarEnderecoDto {
 
     @NotEmpty(message = "Obrigatório informar o logradouro.")
     private String logradouro;
@@ -18,16 +20,17 @@ public class EnderecoDto {
     private String cidade;
 
     @NotNull(message = "Obrigatório informar se é o endereco principal para a pessoa cadastrada.")
-    private boolean isPrincipal;
+    private TipoEndereco tipoEndereco;
 
-
-    public EnderecoDto(String logradouro, Integer cep, Integer numero, String cidade, boolean isPrincipal) {
+    public CadastrarEnderecoDto(String logradouro, Integer cep, Integer numero, String cidade, TipoEndereco tipoEndereco) {
         this.logradouro = logradouro;
         this.cep = cep;
         this.numero = numero;
         this.cidade = cidade;
-        this.isPrincipal = isPrincipal;
+        this.tipoEndereco = tipoEndereco;
     }
+
+    protected CadastrarEnderecoDto(){}
 
     public String getLogradouro() {
         return logradouro;
@@ -48,8 +51,7 @@ public class EnderecoDto {
         return cidade;
     }
 
-    public boolean isPrincipal() {
-        return isPrincipal;
+    public TipoEndereco getTipoEndereco() {
+        return tipoEndereco;
     }
-
 }

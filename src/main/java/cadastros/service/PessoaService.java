@@ -1,16 +1,19 @@
 package cadastros.service;
 
+import cadastros.domain.model.Endereco;
 import cadastros.domain.model.Pessoa;
 import cadastros.domain.repository.PessoaRepository;
 import cadastros.dto.PessoaDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
+
 
 @Service
 public class PessoaService {
@@ -18,8 +21,9 @@ public class PessoaService {
     @Autowired
     PessoaRepository repository;
 
-    public List<Pessoa> listarTodos(){
-        return repository.findAll();
+    public List<Pessoa> listarTodos(Pageable paginacao){
+        Page<Pessoa> pessoas = repository.findAll(paginacao);
+        return pessoas.stream().collect(toList());
     }
 
     public Pessoa listarPorId(Long id){
@@ -27,6 +31,11 @@ public class PessoaService {
                 .orElseThrow( () ->
                         new ResponseStatusException(HttpStatus.NOT_FOUND,
                                 "Pessoa não encontrada com o ID informado."));
+    }
+
+    public List<Endereco> listarEnderecosPorPessoa(Long id){
+        Pessoa pessoa = this.listarPorId(id);
+        return pessoa.getEnderecos();
     }
 
     public List<Pessoa> buscarPor(Pessoa filtro){
@@ -37,7 +46,7 @@ public class PessoaService {
 
         Example example = Example.of(filtro, matcher);
 
-        return repository.findAll(example);
+        return repository.findAll(example, Sort.by("id").ascending());
     }
 
     public Pessoa cadastrar(PessoaDto dto){
